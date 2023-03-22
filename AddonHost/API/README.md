@@ -40,10 +40,10 @@ extern "C" __declspec(dllexport) void GetAddonDef()
 {
     AddonDef = new AddonDef();
     AddonDef->Signature = 17;
-    AddonDef->Name = "World Compass"
+    AddonDef->Name = L"World Compass";
     AddonDef->Version = __DATE__ L" " __TIME__;
-    AddonDef->Author = "Raidcore";
-    AddonDef->Description = "Adds a simple compass widget to the UI, as well as to your character in the world."
+    AddonDef->Author = L"Raidcore";
+    AddonDef->Description = L"Adds a simple compass widget to the UI, as well as to your character in the world.";
     AddonDef->Load = AddonLoad;
     AddonDef->Unload = AddonUnload;
 
@@ -52,7 +52,7 @@ extern "C" __declspec(dllexport) void GetAddonDef()
 
     /* not necessary if hosted on Raidcore, but shown anyway for the  example also useful as a backup resource */
     AddonDef->Provider = EUpdateProvider::GitHub;
-    AddonDef->UpdateLink = "https://github.com/RaidcoreGG/GW2-Compass";
+    AddonDef->UpdateLink = L"https://github.com/RaidcoreGG/GW2-Compass";
 
     return AddonDef;
 }
@@ -68,6 +68,11 @@ Do not use 0.
 The Load function will receive a struct containing all the API functions and resources at your disposal.
 
 ```cpp
+typedef MH_STATUS(__stdcall* MINHOOK_CREATE)(LPVOID pTarget, LPVOID pDetour, LPVOID* ppOriginal);
+typedef MH_STATUS(__stdcall* MINHOOK_REMOVE)(LPVOID pTarget);
+typedef MH_STATUS(__stdcall* MINHOOK_ENABLE)(LPVOID pTarget);
+typedef MH_STATUS(__stdcall* MINHOOK_DISABLE)(LPVOID pTarget);
+
 struct VTableMinhook
 {
 	MINHOOK_CREATE		CreateHook;
@@ -76,6 +81,10 @@ struct VTableMinhook
 	MINHOOK_DISABLE		DisableHook;
 };
 
+typedef void (*LOGGER_LOGA)(ELogLevel aLogLevel, const char* aFmt, ...);
+typedef void (*LOGGER_LOGW)(ELogLevel aLogLevel, const wchar_t* aFmt, ...);
+typedef void (*LOGGER_ADDREM)(ILogger* aLogger);
+
 struct VTableLogging
 {
 	LOGGER_LOGA			LogA;
@@ -83,6 +92,12 @@ struct VTableLogging
 	LOGGER_ADDREM		RegisterLogger;
 	LOGGER_ADDREM		UnregisterLogger;
 };
+
+typedef void (*EVENTS_RAISE)(const wchar_t* aEventName, void* aEventData);
+typedef void (*EVENTS_SUBSCRIBE)(const wchar_t* aEventName, EVENTS_CONSUME aConsumeEventCallback);
+
+typedef void (*KEYBINDS_REGISTER)(const wchar_t* aIdentifier, KEYBINDS_PROCESS aKeybindHandler, const wchar_t* aKeybind);
+typedef void (*KEYBINDS_UNREGISTER)(const wchar_t* aIdentifier);
 
 struct AddonAPI
 {
@@ -189,24 +204,13 @@ After that you can register your keybinds!
 ```cpp
 #include "Shared.h"
 
-struct Keybind
-{
-	WORD Key;
-	bool Alt;
-	bool Ctrl;
-	bool Shift;
-};
-
 void SetupKeybinds()
 {
-    Keybind ctrlC{};
-    ctrlC.Ctrl = true;
-    ctrlC.Key = 67;
-    APIDefs.RegisterKeybind(L"COMPASS_TOGGLEVIS", ProcessKeybind, ctrlC);
+    APIDefs.RegisterKeybind(L"COMPASS_TOGGLEVIS", ProcessKeybind, L"CTRL+C");
 }
 ```
 
-Now you've set up a keybind that will invoke `COMPASS_TOGGLEVIS` whenever Ctrl + C is pressed. Your handler function will receive this and you can do whatever you want with it! If you want to add more keybinds, simple add more checks to your ProcessKeybind() function.
+Now you've set up a keybind that will invoke `COMPASS_TOGGLEVIS` whenever Ctrl + C is pressed. Your handler function will receive this and you can do whatever you want with it! If you want to add more keybinds, simply add more checks to your ProcessKeybind() function.
 
 ## Events
 Using events is as simple as keybinds!
@@ -262,7 +266,7 @@ That's all there is to raising an event, you simply call the raise function with
 ---
 
 # Logging
-Normally you will only use the LogA and LogW functions inside of the AddonAPI struct. All you need to know about those, is that you can use them for printf style logging.
+Normally you will only use the LogA and LogW functions inside of the AddonAPI struct. All you need to know about those, is that you can use them for printf-style logging.
 
 ## Custom Logging
 The AddonHost by default implements a FileLogger, ConsoleLogger, if `-ggconsole` is set, and logging to the ImGui window in game.

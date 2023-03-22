@@ -58,7 +58,7 @@ If you're concerned about anything malicious going on, feel free to decompile an
 ---
 
 # Credits
-- [GGDM](https://nkga.github.io/post/ggdm---combat-analysis-mod-for-guild-wars-2/): For the idea of a proxy dll, hot-loading & invaluable help with hooking related stuff.
+<!--- [GGDM](https://nkga.github.io/post/ggdm---combat-analysis-mod-for-guild-wars-2/): For the idea of a proxy dll, hot-loading & invaluable help with hooking related stuff. -->
 - [ArcDPS](https://www.deltaconnected.com/arcdps/):  For the idea of an addon loading system.
 - Crafty.1372: For enduring the absolute lunacy that my questions to him are.
 - Greaka.6905: For giving me a comprehensible list of why the alternative addon host solution is terrible, as I never tried it and never will.

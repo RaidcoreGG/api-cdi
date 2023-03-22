@@ -1,0 +1,6 @@
+[submodule "AddonHost/API/Nexus"]
+	path = AddonHost/API/Nexus
+	url = https://github.com/RaidcoreGG/RCGG-lib-nexus-api
+[submodule "AddonHost/API/Definitions"]
+	path = AddonHost/API/Definitions
+	url = https://github.com/RaidcoreGG/RCGG-lib-nexus-api
