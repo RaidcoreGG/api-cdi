@@ -3,7 +3,7 @@ This is a full guide on how to get started with the AddonHost and implement your
 
 If you just need an example, not a guide, refer to [the Compass Mod](https://github.com/RaidcoreGG/GW2-Compass).
 
-If you just want the definitions look at [`Definitions.h`](./Definitions.h).
+If you just want the definitions look at [`Nexus.h`](./Definitions/Nexus.h).
 
 Each addon loaded by the host requires to have one function exported `GetAddonDef`. The signature is as simple as it gets, all it has to do is return a pointer to a struct with the addon's definitions: `AddonDefinitions* GetAddonDef()`.
 
@@ -11,20 +11,23 @@ The struct in question:
 ```cpp
 struct AddonDefinition
 {
-	signed int      Signature;      /* Raidcore Addon ID, set to random negative integer if not on Raidcore */
-	const char*		Name;           /* Name of the addon as shown in the library */
-	const char*		Version;        /* Leave as '__DATE__ " " __TIME__' to maintain consistency */
-	const char*		Author;         /* Author of the addon */
-	const char*		Description;    /* Short description */
+	/* required */
+	signed int      Signature;      /* Raidcore Addon ID, set to random unqiue *negative* integer if not on raidcore.gg */
+	signed int		APIVersion;		/* Determines which AddonAPI struct revision the Loader will pass, use the NEXUS_API_VERSION define from Nexus.h */
+	const char*     Name;           /* Name of the addon as shown in the library */
+	signed short	VersionMajor;   /* Version info */
+	signed short	VersionMinor;
+	signed short	VersionBuild;
+	signed short	VersionRevision;
+	const char*     Author;         /* Author of the addon */
+	const char*     Description;    /* Short description */
 	ADDON_LOAD      Load;           /* Pointer to Load Function of the addon */
 	ADDON_UNLOAD    Unload;         /* Pointer to Unload Function of the addon */
 	EAddonFlags     Flags;          /* Information about the addon */
 
-	ADDON_RENDER    Render;         /* Present callback to render imgui */
-	ADDON_WNDPROC   WndProc;        /* WndProc callback for custom implementations beyond keybinds, return true if processed by addon, false if passed through */
-
+	/* update fallback */
 	EUpdateProvider Provider;       /* What platform is the the addon hosted on */
-	const char*		UpdateLink;     /* Link to the update resource */
+	const char*     UpdateLink;     /* Link to the update resource */
 };
 ```
 
@@ -32,42 +35,56 @@ struct AddonDefinition
 ```cpp
 AddonDefinition* AddonDef;
 
-extern "C" __declspec(dllexport) void GetAddonDef()
+extern "C" __declspec(dllexport) AddonDefinition* GetAddonDef()
 {
-    AddonDef = new AddonDef();
-    AddonDef->Signature = 17;
-    AddonDef->Name = "World Compass";
-    AddonDef->Version = __DATE__ " " __TIME__;
-    AddonDef->Author = "Raidcore";
-    AddonDef->Description = "Adds a simple compass widget to the UI, as well as to your character in the world.";
-    AddonDef->Load = AddonLoad;
-    AddonDef->Unload = AddonUnload;
-    AddonDef->Flags = EAddonFlags::None;
+	AddonDef = new AddonDefinition();
+	AddonDef->Signature = 17;
+	AddonDef->APIVersion = NEXUS_API_VERSION; // 1
+	AddonDef->Name = "World Compass";
+	Version.Major = 1;
+	Version.Minor = 0;
+	Version.Build = 0;
+	Version.Revision = 1;
+	AddonDef->Version = Version;
+	AddonDef->Author = "Raidcore";
+	AddonDef->Description = "Adds a simple compass widget to the UI, as well as to your character in the world.";
+	AddonDef->Load = AddonLoad;
+	AddonDef->Unload = AddonUnload;
+	AddonDef->Flags = EAddonFlags::None;
 
-    AddonDef->Render = AddonRender;
+	/* not necessary if hosted on Raidcore, but shown anyway for the example also useful as a backup resource */
+	AddonDef->Provider = EUpdateProvider::GitHub;
+	AddonDef->UpdateLink = "https://github.com/RaidcoreGG/GW2-Compass";
 
-    /* not necessary if hosted on Raidcore, but shown anyway for the  example also useful as a backup resource */
-    AddonDef->Provider = EUpdateProvider::GitHub;
-    AddonDef->UpdateLink = "https://github.com/RaidcoreGG/GW2-Compass";
-
-    return AddonDef;
+	return AddonDef;
 }
 ```
 
-At a **minimum** each addon must define **Signature, Name, Version, Author, Description** as well as **Load and Unload** functions. Those will be called to initialise and shutdown the addon.
+Besides **Provider & UpdateLink** all fields are required.
+Load() will be called to initialise your addon.
+Unload() when the game shuts down, or the addon is updated or unloaded.
 
-> **About addon signatures**:   
+> **About addon signatures**:  
 If your addon is hosted on Raidcore, this should be the unique ID of your addon.  
 If it's not hosted on Raidcore, choose any *negative* integer.  
 Do not use 0. Do not use any signature that's used by another addon.
 
-The Load function will receive a struct containing all the API functions and resources at your disposal.
+> **About API versions**:  
+If you don't use any of the functions Nexus provides, set APIVersion to 0.  
+If you use a non-zero value, it has to be one that actually exists or *existed* in the past as defined in NEXUS_API_VERSION in [`Nexus.h`](./Definitions/Nexus.h) as otherwise there will not be a matching version and therefore the addon won't be loaded.
+
+The Load function will receive a struct, matching the requested API version containing all the API functions and resources at your disposal.
 
 ```cpp
 struct AddonAPI
 {
+	/* Renderer */
 	IDXGISwapChain*				SwapChain;
 	ImGuiContext*				ImguiContext;
+	void*						ImguiMalloc;
+	void*						ImguiFree;
+	GUI_REGISTER				RegisterRender;
+	GUI_UNREGISTER				UnregisterRender;
 
 	/* Minhook */
 	MINHOOK_CREATE				CreateHook;
@@ -84,6 +101,10 @@ struct AddonAPI
 	EVENTS_RAISE				RaiseEvent;
 	EVENTS_SUBSCRIBE			SubscribeEvent;
 	EVENTS_SUBSCRIBE			UnsubscribeEvent;
+
+	/* WndProc */
+	WNDPROC_REGISTER			RegisterWndProc;
+	WNDPROC_UNREGISTER			UnregisterWndProc;
 
 	/* Keybinds */
 	KEYBINDS_REGISTER			RegisterKeybind;
@@ -117,7 +138,7 @@ It is recommended to store the struct somewhere in a globally accessible variabl
 #ifndef SHARED_H
 #define SHARED_H
 
-extern AddonAPI ApiDefs;
+extern AddonAPI* ApiDefs;
 
 #endif
 ```
@@ -125,16 +146,19 @@ extern AddonAPI ApiDefs;
 ```cpp
 #include "Shared.h"
 
-AddonAPI ApiDefs;
+AddonAPI* ApiDefs;
 ```
 `ModuleMain.cpp`
 ```cpp
 #include "Shared.h"
 
-void AddonLoad(AddonAPI aHostApi)
+void AddonLoad(AddonAPI* aApi)
 {
-    ApiDefs = aHostApi;
-    ImGui::SetCurrentContext(aHostApi.ImguiContext);
+    APIDefs = aApi;
+
+	/* If you are using ImGui you will need to set these. */
+	ImGui::SetCurrentContext(APIDefs->ImguiContext);
+	ImGui::SetAllocatorFunctions((void* (*)(size_t, void*))APIDefs->ImguiMalloc, (void(*)(void*, void*))APIDefs->ImguiFree);
 }
 
 void AddonUnload()
@@ -146,10 +170,12 @@ void AddonUnload()
 > **About addon unlolading**:   
 Your unload function should free all resources you previously allocated.  
 For example, if you added a keybind you should free it here.  
-*In case you forget: Don't worry. Nexus will automatically release leftover references. Don't make it a habit though.*
+*In case you forget:*  
+*Don't worry. Nexus will automatically release leftover references.*  
+*Don't make it a habit though.*
 
 The API info should be pretty self-explanatory, but just in case.
-AddonAPI contains the SwapChain for custom rendering, the ImguiContext, which will be required to be set in your load function, see above example.
+AddonAPI contains the SwapChain for custom rendering, the ImguiContext and its Malloc and Free functions, which will be required to be set in your load function, see above example.
 
 It also contains Minhook functions, so you don't have to add an additional dependency to hook, same goes for logging. If you wanna add a custom logger refer to the section Logging.
 
@@ -159,7 +185,7 @@ If you want to use have an Options window, you should declare it via AddonDefini
 
 ---
 
-# Using Events, Keybinds, Resources
+# Using Events, Keybinds, Resources and all the other good stuff
 ## Keybinds
 If every addon implemented their own WndProc and did the same checks all the other addons do, it would get a bit redundant, wouldn't it? You also cannot maintain any sort of consistent behaviour among those addons. That's why Raidcore defines *keybinds* instead.
 
@@ -167,10 +193,10 @@ To use a keybind you simply have to implement a handler function for keybinds. I
 
 `ModuleMain.cpp` - KeybindHandler
 ```cpp
-void ProcessKeybind(std::string aIdentifier)
+void ProcessKeybind(const char* aIdentifier)
 {
     /* if KB_COMPASS_TOGGLEVIS is passed, we toggle the compass visibility */
-	if (aIdentifier == "KB_COMPASS_TOGGLEVIS")
+	if (strcmp(aIdentifier, "KB_COMPASS_TOGGLEVIS") == 0)
 	{
 		IsCompassVisible = !IsCompassVisible;
 		return;
@@ -185,15 +211,15 @@ After that you can register your keybinds!
 
 void SetupKeybinds()
 {
-    APIDefs.RegisterKeybind("KB_COMPASS_TOGGLEVIS", ProcessKeybind, "CTRL+C");
+    APIDefs->RegisterKeybind("KB_COMPASS_TOGGLEVIS", ProcessKeybind, "CTRL+C");
 }
 ```
 
-Now you've set up a keybind that will invoke `KB_COMPASS_TOGGLEVIS` whenever `Ctrl + C` is pressed. Your handler function will receive this and you can do whatever you want with it! If you want to add more keybinds, simply add more checks to your ProcessKeybind() function.
+Now you've set up a keybind that will invoke `KB_COMPASS_TOGGLEVIS` whenever `Ctrl + C` is pressed. Your handler function will receive this and you can do whatever you want with it! If you want to add more keybinds, simply add more checks to your `ProcessKeybind()` function.
 
 ## Events
 Using events is as simple as keybinds!
-You will need a function to handle this specific event and somewhere in your code you have to register your event and handler.
+You will need a function to handle *this specific* event and somewhere in your code you have to register your event and handler.
 
 `ModuleMain.cpp` - EventHandler
 ```cpp
@@ -215,14 +241,18 @@ Subscribing to the event
 
 void SetupEvents()
 {
-    APIDefs.SubscribeEvent("EV_MUMBLE_IDENTITY_UPDATED",  HandleMumbleIdentityUpdate);
+    APIDefs->SubscribeEvent("EV_MUMBLE_IDENTITY_UPDATED",  HandleMumbleIdentityUpdate);
 }
 ```
 
 Now you're all set to receive event callbacks! The example event above is actually implemented by Raidcore and you can subscribe to it!
 
+Here's a list of default events implemented in Raidcore:
+1. EV_MUMBLE_IDENTITY_UPDATED
+2. EV_WINDOW_RESIZED
+
 ### Raising events
-Raising events is also very simple, using the same compass function, let's send some random data each time we're looking north!
+Raising events is also very simple, let's send some random data each time we're looking north!
 
 `ModuleMain.cpp`
 ```cpp
@@ -246,7 +276,7 @@ That's all there is to raising an event, you simply call the raise function with
 ---
 
 # Logging
-Normally you will only use the Log function inside of the AddonAPI struct. All you need to know about it, is that you can use it for printf-style logging.
+Normally you will only use the Log function inside of the AddonAPI struct.
 
 ## Custom Logging
 Nexus by default implements a FileLogger, ConsoleLogger, if `-ggconsole` is set, and logging to the ImGui window in game.
@@ -359,7 +389,7 @@ void AddonLoad(AddonAPI aHostApi)
 
     ConsoleLogger* cLog = new ConsoleLogger();
 	cLog->SetLogLevel(ELogLevel::ALL);
-	ApiDefs.RegisterLogger(cLog);
+	ApiDefs->RegisterLogger(cLog);
 }
 ```
 
@@ -373,6 +403,6 @@ A pointer to the [MumbleLink for realtime positional and other data](https://wik
 
 # Textures
 
-# Localization
+# Localisation
 
 # GW2 API
