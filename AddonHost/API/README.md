@@ -379,6 +379,10 @@ Now you can use the data from these pointers.
 
 To register your own Resource you will have to pass an identifier and its size to the `ShareResource()` function, Nexus will allocate that memory for you and you can write to it freely. Let's extend the `Load()` function, once more.
 
+> **Important**  
+Your identifier will be usable as it was given e.g. `DL_MYSHAREDDATA`, however internally the process ID will be appended e.g. `DL_MYSHAREDDATA_12345` this ensures multiboxing compatibility.
+You don't have to do anything else.
+
 `ModuleMain.cpp`
 ```cpp
 #include "Shared.h"
