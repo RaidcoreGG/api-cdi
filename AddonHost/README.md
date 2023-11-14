@@ -37,7 +37,7 @@
 - **Shared GW2 API & cache**, easily request data from the [official Guild Wars 2 API](https://api.guildwars2.com/v2).
 
 ## API Definitions
-You can find the definitions for the API [here](./API/Definitions) or add them as a submodule from its [repository](https://github.com/RaidcoreGG/RCGG-lib-nexus-api).
+You can find the definitions for the API here under Definitions/Nexus.h or add them as a submodule from its [repository](https://github.com/RaidcoreGG/RCGG-lib-nexus-api).
 
 ## Example code
 You can find an example addon [here](https://github.com/RaidcoreGG/GW2-Compass). Which adds a simple compass to Guild Wars 2.
