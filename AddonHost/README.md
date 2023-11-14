@@ -17,9 +17,9 @@
 ---
 
 # Installation
-1. Download `d3d11.dll` found in the [latest release](https://github.com/RaidcoreGG/GW2-Nexus-Releases).
-2. Place the file in your game installation directory (e.g. `C:\Program Files\Guild Wars 2`). In that same folder you should see `Gw2-64.exe`.
-3. Start the game, you should have a new icon in the top left, or try opening the menu using "CTRL+M" by default.
+1. Download `d3d11.dll` found in the [latest release](https://api.raidcore.gg/nexus.dll).
+2. Place the file in your game installation directory (e.g. `C:\Program Files\Guild Wars 2`) and name it `d3d11.dll`. In that same folder you should see `Gw2-64.exe`.
+3. Start the game, you should have a new icon in the top left, or try opening the menu using "CTRL+O" by default.
 
 ---
 
