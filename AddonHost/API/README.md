@@ -3,7 +3,7 @@ This is a full guide on how to get started with the AddonHost and implement your
 
 If you just need an example, not a guide, refer to [the Compass Mod](https://github.com/RaidcoreGG/GW2-Compass).
 
-If you just want the definitions look at [`Nexus.h`](./Definitions/Nexus.h).
+If you just want the definitions look at [`Nexus.h`](https://github.com/RaidcoreGG/RCGG-lib-nexus-api).
 
 Each addon loaded by the host requires to have one function exported `GetAddonDef`. The signature is as simple as it gets, all it has to do is return a pointer to a struct with the addon's definitions: `AddonDefinitions* GetAddonDef()`.
 
