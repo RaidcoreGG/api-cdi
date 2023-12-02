@@ -38,11 +38,10 @@ struct AddonDefinition
 
 `Example implementation of GetAddonDef()`
 ```cpp
-AddonDefinition* AddonDef;
+AddonDefinition AddonDef{};
 
 extern "C" __declspec(dllexport) AddonDefinition* GetAddonDef()
 {
-	AddonDef = new AddonDefinition();
 	AddonDef->Signature = 17;
 	AddonDef->APIVersion = NEXUS_API_VERSION; // taken from Nexus.h
 	AddonDef->Name = "World Compass";
@@ -60,7 +59,7 @@ extern "C" __declspec(dllexport) AddonDefinition* GetAddonDef()
 	AddonDef->Provider = EUpdateProvider::GitHub;
 	AddonDef->UpdateLink = "https://github.com/RaidcoreGG/GW2-Compass";
 
-	return AddonDef;
+	return &AddonDef;
 }
 ```
 
