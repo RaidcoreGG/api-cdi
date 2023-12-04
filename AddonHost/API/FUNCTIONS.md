@@ -50,6 +50,10 @@ Mind the backslash missing when passing an empty string.
 > `GetAddonDir("MyVeryFirstNexusAddon");`  
 Returns `"C:\Program Files\Guild Wars 2\addons\MyVeryFirstNexusAddon"`
 
+> Note:  
+Do not pass a prefix / or \ as these might return a path relative to root.
+E.g. `GetAddonDir("/MyVeryFirstNexusAddon");` will return `"C:\MyVeryFirstNexusAddon"`.
+
 ### **`PATHS_GETCOMMONDIR GetCommonDirectory;`**
 `typedef const char* (*PATHS_GETCOMMONDIR)();`
 
