@@ -3,6 +3,8 @@ This is a full guide on how to get started with the AddonHost and implement your
 
 If you just need an example, not a guide, refer to [the Compass Mod](https://github.com/RaidcoreGG/GW2-Compass).
 
+Also check out the 1:1 port of the [ArcDPS Combatdemo](https://github.com/RaidcoreGG/Nexus-ArcDPS_CombatDemo).
+
 If you just want the definitions look at [`Nexus.h`](https://github.com/RaidcoreGG/RCGG-lib-nexus-api).
 
 Each addon loaded by the host requires to have one function exported `GetAddonDef`. The signature is as simple as it gets, all it has to do is return a pointer to a struct with the addon's definitions: `AddonDefinitions* GetAddonDef()`.
@@ -42,22 +44,22 @@ AddonDefinition AddonDef{};
 
 extern "C" __declspec(dllexport) AddonDefinition* GetAddonDef()
 {
-	AddonDef->Signature = 17;
-	AddonDef->APIVersion = NEXUS_API_VERSION; // taken from Nexus.h
-	AddonDef->Name = "World Compass";
-	AddonDef->Version.Major = 1;
-	AddonDef->Version.Minor = 0;
-	AddonDef->Version.Build = 0;
-	AddonDef->Version.Revision = 1;
-	AddonDef->Author = "Raidcore";
-	AddonDef->Description = "Adds a simple compass widget to the UI, as well as to your character in the world.";
-	AddonDef->Load = AddonLoad;
-	AddonDef->Unload = AddonUnload;
-	AddonDef->Flags = EAddonFlags::None;
+	AddonDef.Signature = 17;
+	AddonDef.APIVersion = NEXUS_API_VERSION; // taken from Nexus.h
+	AddonDef.Name = "World Compass";
+	AddonDef.Version.Major = 1;
+	AddonDef.Version.Minor = 0;
+	AddonDef.Version.Build = 0;
+	AddonDef.Version.Revision = 1;
+	AddonDef.Author = "Raidcore";
+	AddonDef.Description = "Adds a simple compass widget to the UI, as well as to your character in the world.";
+	AddonDef.Load = AddonLoad;
+	AddonDef.Unload = AddonUnload;
+	AddonDef.Flags = EAddonFlags::None;
 
 	/* not necessary if hosted on Raidcore, but shown anyway for the example also useful as a backup resource */
-	AddonDef->Provider = EUpdateProvider::GitHub;
-	AddonDef->UpdateLink = "https://github.com/RaidcoreGG/GW2-Compass";
+	AddonDef.Provider = EUpdateProvider::GitHub;
+	AddonDef.UpdateLink = "https://github.com/RaidcoreGG/GW2-Compass";
 
 	return &AddonDef;
 }
@@ -66,6 +68,8 @@ extern "C" __declspec(dllexport) AddonDefinition* GetAddonDef()
 Besides **Provider & UpdateLink** all fields are required.
 Load() will be called to initialise your addon.
 Unload() when the game shuts down, or the addon is updated or unloaded, if your addon shouldn't unload at runtime set EAddonFlags::DisableHotloading or leave `Unload() = 0;`.
+
+It is recommended to keep an Unload function for when the game shut downs however.
 
 > **About addon signatures**:  
 If your addon is hosted on Raidcore, this should be the unique ID of your addon.  
@@ -78,6 +82,7 @@ If you use a non-zero value, it has to be one that actually exists or *existed* 
 
 The Load function will receive a struct, matching the requested API version containing all the API functions and resources at your disposal.
 
+`API Revision 1`
 ```cpp
 struct AddonAPI
 {
@@ -137,6 +142,8 @@ struct AddonAPI
 
 It is recommended to store the struct somewhere in a globally accessible variable you can include in all your files. Example below.
 
+Check out the [functions readme](FUNCTIONS.md) on details to each API function.
+
 `Shared.h`
 ```cpp
 #ifndef SHARED_H
@@ -161,7 +168,7 @@ void AddonLoad(AddonAPI* aApi)
     APIDefs = aApi;
 
 	/* If you are using ImGui you will need to set these. */
-	ImGui::SetCurrentContext(APIDefs->ImguiContext);
+	ImGui::SetCurrentContext((ImGuiContext*)APIDefs->ImguiContext);
 	ImGui::SetAllocatorFunctions((void* (*)(size_t, void*))APIDefs->ImguiMalloc, (void(*)(void*, void*))APIDefs->ImguiFree);
 }
 
@@ -179,7 +186,7 @@ For example, if you added a keybind you should free it here.
 *Don't make it a habit though.*
 
 The API info should be pretty self-explanatory, but just in case.
-AddonAPI contains the SwapChain for custom rendering, the ImguiContext and its Malloc and Free functions, which will be required to be set in your load function, see above example.
+AddonAPI contains the SwapChain for custom rendering, the ImguiContext and its Malloc and Free functions, which will be required to be set in your load function, if you want to render ImGui, see above example.
 
 It also contains Minhook functions, so you don't have to add an additional dependency to hook.
 
@@ -197,7 +204,7 @@ RegisterRender takes the ERenderType for you to define where you want your funct
 - PostRender,
 - OptionsRender
 
-Here's a little `pseudocode overview where they are called:
+Here's a little pseudocode overview where they are called:
 ```cpp
 void Render()
 {
@@ -307,6 +314,7 @@ void HandleMumbleIdentityUpdate(void* aEventArgs)
     Renderer::SetNewFOV(identity.FOV);
 }
 ```
+Check out the [events readme](EVENTS.md) for an overview of all default-available events and their payloads.
 
 Subscribing to the event
 ```cpp
@@ -314,15 +322,11 @@ Subscribing to the event
 
 void SetupEvents()
 {
-    APIDefs->SubscribeEvent("EV_MUMBLE_IDENTITY_UPDATED",  HandleMumbleIdentityUpdate);
+    APIDefs->SubscribeEvent("EV_MUMBLE_IDENTITY_UPDATED", HandleMumbleIdentityUpdate);
 }
 ```
 
 Now you're all set to receive event callbacks! The example event above is actually implemented by Raidcore and you can subscribe to it!
-
-Here's a list of default events implemented in Raidcore:
-1. EV_MUMBLE_IDENTITY_UPDATED
-2. EV_WINDOW_RESIZED
 
 ### Raising events
 Raising events is also very simple, let's send some random data each time we're looking north!

@@ -57,9 +57,7 @@ As for any concerns, feel free to decompile and disassemble the .DLL. It is not 
 ---
 
 # Credits
-<!-- [GGDM](https://nkga.github.io/post/ggdm---combat-analysis-mod-for-guild-wars-2/): For the idea of a proxy dll & hot-loading. -->
+- [GGDM](https://nkga.github.io/post/ggdm---combat-analysis-mod-for-guild-wars-2/): For the idea of a proxy dll & hot-loading.
 - [Deltaconnected / ArcDPS](https://www.deltaconnected.com/arcdps/): For the idea of an addon loading system.
 - [Thomas McBoyle](https://github.com/TMcBoyle): For general guidance & programming help.
 - [Jakub Vitek](https://github.com/Sognus): Invaluable help with debugging & general guidance.
-<!-- [Dear ImGui](): For the UI Framework and undescribable pain & suffering. (Though I learned to love ImGui.)
-- [nlohmann::json](): For the JSON Framework and undescribable pain & suffering. -->
