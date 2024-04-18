@@ -1,6 +1,5 @@
 # Functions
 This document explains each of the exported functions in the Raidcore Nexus API.
-The current API Version is 1.
 
 ## Render
 ### **`GUI_ADDRENDER RegisterRender;`**  
@@ -25,7 +24,7 @@ These were already detailed in the Readme, but here's a quick overview again:
 
 As for the render callback, that is simply a function like `void Render();` nothing more fancy than that.
 
-### **`GUI_REMRENDER UnregisterRender;`**    
+### **`GUI_REMRENDER DeregisterRender;`**    
 `typedef void (*GUI_REMRENDER) (GUI_RENDER aRenderCallback);`
 
 Expects you to pass the same render callback that you used to register.
@@ -65,11 +64,13 @@ This is the folder intended for shared data, such as caches etc that do not belo
 There won't be any hooking tutorial or how to use these functions here, please read up on MinHook instead.
 
 ## Logging
-### **`LOGGER_LOGA Log;`**
-`typedef void (*LOGGER_LOGA)(ELogLevel aLogLevel, const char* aStr);`
+### **`LOGGER_LOG2 Log;`**
+`typedef void (*LOGGER_LOG2)(ELogLevel aLogLevel, const char* aChannel, const char* aStr);`
 
-Expects you to pass the log level value and a const char*.
+Expects you to pass the log level value, a const char* to determine which channel to post in (for the ingame Log window) and a const char* for the message.
 Writing a log message appends to the in-game Log window as well as the Nexus.log file.
+
+Supports custom colouring like: `"This is a <c=#FF0000>log message</c> that has colour."`
 
 LogLevels are as follows:
 ```cpp
@@ -85,6 +86,14 @@ typedef enum ELogLevel
 } ELogLevel;
 ```
 
+## GUI Alerts
+### **`ALERTS_NOTIFY SendAlert;`**
+`typedef void (*ALERTS_NOTIFY)(const char* aMessage);`
+
+Sends a yellow alert message for the user in the center of their screen.
+The message appears for 5 seconds before fading out.
+Any call to this adds to a queue.
+
 ## Events
 
 ### **`EVENTS_RAISE RaiseEvent;`**
@@ -99,6 +108,21 @@ This API is currently being reworked in Revision 2 such as that you can share da
 
 Example:
 `RaiseEvent("EV_WINDOWRESIZED", (void*)pV2WindowSize);`
+
+### **`EVENTS_RAISENOTIFICATION RaiseEventNotification;`**
+`typedef void (*EVENTS_RAISENOTIFICATION)(const char* aIdentifier);`
+
+Same as `RaiseEvent` except the payload is automatically set to `nullptr`.
+
+### **`EVENTS_RAISE_TARGETED RaiseEventTargeted;`**
+`typedef void (*EVENTS_RAISE_TARGETED)(signed int aSignature, const char* aIdentifier, void* aEventData);`
+
+Same as `RaiseEvent` except you can supply a signature and only the addon with the matching signature receives the event.
+
+### **`EVENTS_RAISENOTIFICATION_TARGETED RaiseEventNotificationTargeted;`**
+`typedef void (*EVENTS_RAISENOTIFICATION_TARGETED)(signed int aSignature, const char* aIdentifier);`
+
+Same as `RaiseEventNotification` except you can supply a signature and only the addon with the matching signature receives the event.
 
 ### **`EVENTS_SUBSCRIBE SubscribeEvent;`**
 `typedef void (*EVENTS_SUBSCRIBE)(const char* aIdentifier, EVENT_CONSUME aConsumeEventCallback);`
@@ -126,11 +150,15 @@ The only difference to a regular WndProc being that the return value is a UINT i
 
 You are expected to return 0 if you consumed the current uMsg or a non-zero value if you didn't do anything with it. In this case it's being passed along to other functions, addons and the game.
 
-### **`WNDPROC_ADDREM UnregisterWndProc;`**
+### **`WNDPROC_ADDREM DeregisterWndProc;`**
 `typedef void (*WNDPROC_ADDREM)(WNDPROC_CALLBACK aWndProcCallback);` (same as RegisterWndProc)
 
 Same as registering a WndProc.
-	
+
+### **`WNDPROC_SENDTOGAME SendWndProcToGameOnly;`**
+`typedef LRESULT (*WNDPROC_SENDTOGAME)(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);`
+
+Skips all other hooks and sends a WndProc message to the game directly.
 
 ## Keybinds
 To handle keybinds you registered you will need to define a ProcessKeybinds function or similar with the following signature:  
@@ -175,8 +203,8 @@ Key refers to a **Scan Code** not a Virtual Key.
 
 The struct you are passing is copied, so you can just throw it at the function.
 
-### **`KEYBINDS_UNREGISTER UnregisterKeybind;`**
-`typedef void (*KEYBINDS_UNREGISTER)(const char* aIdentifier);`
+### **`KEYBINDS_DEREGISTER DeregisterKeybind;`**
+`typedef void (*KEYBINDS_DEREGISTER)(const char* aIdentifier);`
 	
 Since each keybind can only have one handler, meaning if you have a keybind such as `KB_BOONTABLE` you probably wanna make it more distinct to your addon, such as `KB_MYFIRSTADDON_BOONTABLE` to avoid any conflict with other addons. Otherwise it can happen due to load order that they steal your keybind.
 
@@ -222,6 +250,38 @@ typedef struct Texture
 `typedef Texture* (*TEXTURES_GET)(const char* aIdentifier);`
 
 Get Texture will return either a pointer to the Texture if it exists, or a nullptr if it doesn't. You need to handle this appropriately.
+
+### **`TEXTURES_GETORCREATEFROMFILE GetTexture;`**
+`typedef Texture* (*TEXTURES_GETORCREATEFROMFILE)(const char* aIdentifier, const char* aFilename);`
+
+Gets a texture, if it already exists or if it doesn't will attempt to load it from the provided file. Like `LoadTextureFromFile` as described below.
+
+Useful to be called inside of render like:
+```cpp
+if (Texture)
+{
+	RenderImage(Texture);
+}
+else
+{
+	API->GetOrCreateFromFile("Texture", "C:/Guild Wars 2/Texture.png");
+}
+```
+
+### **`TEXTURES_GETORCREATEFROMRESOURCE GetTexture;`**
+`typedef Texture* (*TEXTURES_GETORCREATEFROMRESOURCE)(const char* aIdentifier, unsigned aResourceID, HMODULE aModule);`
+
+Like `LoadTextureFromResource` as described below.
+
+### **`TEXTURES_GETORCREATEFROMURL GetTexture;`**
+`typedef Texture* (*TEXTURES_GETORCREATEFROMURL)(const char* aIdentifier, const char* aRemote, const char* aEndpoint);`
+
+Like `LoadTextureFromURL` as described below.
+
+### **`TEXTURES_GETORCREATEFROMMEMORY GetTexture;`**
+`typedef Texture* (*TEXTURES_GETORCREATEFROMMEMORY)(const char* aIdentifier, void* aData, size_t aSize);`
+
+Like `LoadTextureFromMemory` as described below.
 
 ### **`TEXTURES_LOADFROMFILE LoadTextureFromFile;`**
 `typedef void (*TEXTURES_LOADFROMFILE)(const char* aIdentifier, const char* aFilename, TEXTURES_RECEIVECALLBACK aCallback);`
@@ -283,10 +343,15 @@ Here's a bit more going on.
 > Note:  
 If you need help creating icons that look native to Guild Wars 2, you can reach out to us at Raidcore, we can get you started.
 
-### **`QUICKACCESS_REMOVE RemoveShortcut;`**
-`typedef void (*QUICKACCESS_REMOVE) (const char* aIdentifier);`
+### **`QUICKACCESS_GENERIC RemoveShortcut;`**
+`typedef void (*QUICKACCESS_GENERIC) (const char* aIdentifier);`
 
 Removes the shortcut icon, simply pass its identifier.
+
+### **`QUICKACCESS_GENERIC NotifyShortcut;`**
+`typedef void (*QUICKACCESS_GENERIC) (const char* aIdentifier);` (same as RemoveShortcut)
+
+Adds a red notification icon to the Quick Access icon matching the identifier.
 
 ### **`QUICKACCESS_ADDSIMPLE AddSimpleShortcut;`**
 `typedef void (*QUICKACCESS_ADDSIMPLE) (const char* aIdentifier, GUI_RENDER aShortcutRenderCallback);`
@@ -295,7 +360,20 @@ Since a simple shortcut merely appends to the Nexus icon's context menu, you wil
 
 In this callback you can render any ImGui you like, checkboxes, text, whatever.
 
-### **`QUICKACCESS_REMOVE RemoveSimpleShortcut;`** (same as RemoveShortcut)
-`typedef void (*QUICKACCESS_REMOVE) (const char* aIdentifier);`
+### **`QUICKACCESS_GENERIC RemoveSimpleShortcut;`**
+`typedef void (*QUICKACCESS_GENERIC) (const char* aIdentifier);` (same as RemoveShortcut)
 
 Same as RemoveShortcut.
+
+## Localization
+### **`LOCALIZATION_TRANSLATE Translate;`**
+`typedef const char* (*LOCALIZATION_TRANSLATE)(const char* aIdentifier);`
+
+Translates `aIdentifier` into the currently active language.  
+If the identifier does not existing the current language, it attempts to fallback to English.  
+If that doesn't exist either, it returns the passed identifier.
+
+### **`LOCALIZATION_TRANSLATETO TranslateTo;`**
+`typedef const char* (*LOCALIZATION_TRANSLATETO)(const char* aIdentifier, const char* aLanguageIdentifier);`
+
+Same as `Translate`, except it will attempt to translate into the targeted language, rather than the currently active one.
