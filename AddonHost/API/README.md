@@ -257,16 +257,20 @@ To use a keybind you simply have to implement a handler function for keybinds. I
 
 `ModuleMain.cpp` - KeybindHandler
 ```cpp
-void ProcessKeybind(const char* aIdentifier)
+void ProcessKeybind(const char* aIdentifier, bool aIsRelease)
 {
-    /* if KB_COMPASS_TOGGLEVIS is passed, we toggle the compass visibility */
-	if (strcmp(aIdentifier, "KB_COMPASS_TOGGLEVIS") == 0)
-	{
-		IsCompassVisible = !IsCompassVisible;
-		return;
-	}
+  // aIsRelease will be true when the buttons for this bind are no longer held (aka bind is released)
+  if (strcmp(aIdentifier, "KB_MYKEYBIND") == 0 && !aIsRelease)
+    DoStuff();
 }
 ```
+
+> Note: Breaking Change Revision 4
+> 
+> From APIv4 a new parameter was added `bool aIsRelease`
+>
+> Previous Signature:
+> `void ProcessKeybind(const char* aIdentifier)`
 
 After that you can register your keybinds!
 
