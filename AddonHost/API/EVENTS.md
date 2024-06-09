@@ -54,7 +54,44 @@ struct EvCombatData
 ```
 
 ### `EV_ARCDPS_COMBATEVENT_SQUAD_RAW`
-Payload is `EvCombatData*`. Refer to definition above.
+Payload is `EvCombatData*`. Refer to definition above. These events have a 2 second delay.
+
+### `EV_ARCDPS_SELF_JOIN`
+Payload is `EvAgentUpdate*` of the self player agent. Events of this type are triggered upon map load. The last event can be retriggered on demand by addons sending an `EV_REPLAY_ARCDPS_SELF_JOIN` event with an empty payload.
+
+```cpp
+struct EvAgentUpdate				// when ev is null
+{
+	char account[64];		// dst->name	= account name
+	char character[64];		// src->name	= character name
+	uintptr_t id;			// src->id		= agent id
+	uintptr_t instanceId;	// dst->id		= instance id (per map)
+	uint32_t added;			// src->prof	= is new agent
+	uint32_t target;		// src->elite	= is new targeted agent
+	uint32_t Self;			// dst->Self	= is Self
+	uint32_t prof;			// dst->prof	= profession / core spec
+	uint32_t elite;			// dst->elite	= elite spec
+	uint16_t team;			// src->team	= team
+	uint16_t subgroup;		// dst->team	= subgroup
+};
+```
+
+### `EV_ARCDPS_SELF_LEAVE`
+Payload is `EvAgentUpdate*` of the self player agent. Refer to definition above. Events of this type are triggered when changing instance or leaving a party / squad.
+
+### `EV_ARCDPS_SQUAD_JOIN`
+Payload is `EvAgentUpdate*` of an allied player agent. Refer to definition above. Events of this type are triggered when allied players in your instance join your party / squad or when allied players in your party / squad join your instance. These events have a 2 second delay.
+
+Nexus tracks all players in your squad and can retrigger these events on demand by addons sending an `EV_REPLAY_ARCDPS_SQUAD_JOIN` event with an empty payload. This is intended to be used during addon load, you should be careful to handle duplicates since this can be triggered by other addons. 
+
+### `EV_ARCDPS_SQUAD_LEAVE`
+Payload is `EvAgentUpdate*` of an allied player agent. Refer to definition above. Events of this type are triggered when allied players in your instance and party / squad either leave your instance or leave your party / squad. You will not recieve these events if you are the one to change instance or leave the party / squad. These events have a 2 second delay. 
+
+### `EV_ARCDPS_TARGET_CHANGED`
+Payload is `EvAgentUpdate*` of the new target. Refer to definition above. Events of this type are triggered when you target an agent. The last event can be retriggered on demand by addons sending an `EV_REPLAY_ARCDPS_TARGET_CHANGED` event with an empty payload.
+
+### `EV_ACCOUNT_NAME`
+Payload is `const char*` of the self player account name. Events of this type are triggered upon first map load. This event can also be triggered on demand by addons sending an `EV_REQUEST_ACCOUNT_NAME` event with an empty payload.
 
 ## Unofficial Extras
 Nexus relays Unofficial Extras callbacks as events.  
