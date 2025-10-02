@@ -11,7 +11,8 @@ See the [pull requests](https://github.com/RaidcoreGG/api-cdi/pulls) for the cur
 ---
 
 ## [api.raidcore.gg](api.raidcore.gg)
-coming soon
+### v1
+### v2
 
 ## [Nexus](https://github.com/RaidcoreGG/Nexus/wiki)
 Nexus addon API, FAQ and other documentation.
