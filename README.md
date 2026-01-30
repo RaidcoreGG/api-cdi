@@ -1,18 +1,2 @@
-# api-cdi
-
-Collaborative Development Initiative for Public APIs
-
-The contents of this repo are a spec that lays out the current live Raidcore APIs.
-
----
-
-See the [pull requests](https://github.com/RaidcoreGG/api-cdi/pulls) for the current list of proposals. Pull requests that are merged are considered part of the live API.
-
----
-
-## [api.raidcore.gg](api.raidcore.gg)
-### v1
-### v2
-
-## [Nexus](https://github.com/RaidcoreGG/Nexus/wiki)
-Nexus addon API, FAQ and other documentation.
+# api-docs
+This repository contains the source for Nexus's documentation. 
