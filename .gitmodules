@@ -1,3 +1,9 @@
 [submodule "modules/nexus"]
 	path = modules/nexus
 	url = https://github.com/RaidcoreGG/RCGG-lib-nexus-api.git
+[submodule "modules/arcdps"]
+	path = modules/arcdps
+	url = https://github.com/RaidcoreGG/RCGG-lib-arcdps-api.git
+[submodule "modules/mumble"]
+	path = modules/mumble
+	url = https://github.com/RaidcoreGG/RCGG-lib-mumble-api.git
