@@ -1,0 +1,11 @@
+name: Build and Deploy Doxygen docs
+
+on:
+  push:
+    branches: [$default-branch]
+
+jobs:
+  build:
+    uses: "mattnotmitt/doxygen-action@1.12.0"
+  
+    
