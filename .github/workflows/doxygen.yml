@@ -3,9 +3,19 @@ name: Build and Deploy Doxygen docs
 on:
   push:
     branches: [$default-branch]
+  workflow_dispatch: 
 
 jobs:
   build:
-    uses: "mattnotmitt/doxygen-action@1.12.0"
-  
-    
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6.0.2
+      - name: Configure Pages
+        uses: actions/configure-pages@v5.0.0
+      - name: Build Doxygen
+        uses: mattnotmitt/doxygen-action@1.12.0
+      - name: Upload Artifact
+        uses: actions/upload-pages-artifact@v4.0.0
+      - name: Deploy Site
+        uses: actions/deploy-pages@v4.0.5
