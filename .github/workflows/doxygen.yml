@@ -2,7 +2,8 @@ name: Build and Deploy Doxygen docs
 
 on:
   push:
-    branches: [$default-branch]
+    branches: 
+      - main
   workflow_dispatch: 
 
 jobs:
