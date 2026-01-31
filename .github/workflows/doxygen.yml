@@ -17,5 +17,7 @@ jobs:
         uses: mattnotmitt/doxygen-action@1.12.0
       - name: Upload Artifact
         uses: actions/upload-pages-artifact@v4.0.0
+        with:
+          path: modules/html
       - name: Deploy Site
         uses: actions/deploy-pages@v4.0.5
