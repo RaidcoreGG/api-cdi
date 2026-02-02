@@ -1,0 +1,11 @@
+{
+	"emeraldwalk.runonsave": {
+		"shell": "powershell.exe",
+		"commands": [
+			{
+				"match": ".*.md",
+				"cmd": "doxygen"
+			}
+		]
+	}
+}
