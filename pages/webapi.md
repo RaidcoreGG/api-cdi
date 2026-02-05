@@ -19,7 +19,7 @@ interface Addon {
 ### `GET api.raidcore.gg/arcdpslibrary`
 returns an array of objects matching the following type
 ```ts
-type Addon = {
+interface Addon {
 	id: number;
 	name: string;
 	author: string;
