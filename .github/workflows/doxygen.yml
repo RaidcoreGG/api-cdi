@@ -1,0 +1,32 @@
+name: Build and Deploy Doxygen docs
+
+on:
+  push:
+    branches: 
+      - main
+  workflow_dispatch: 
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    permissions:
+      id-token: write
+      pages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6.0.2
+        with:
+          submodules: recursive
+      - name: Configure Pages
+        uses: actions/configure-pages@v5.0.0
+      - run: |
+          mkdir ./assets
+          curl -o ./assets/favicon.png "https://raidcore.gg/favicon.png"
+      - name: Build Doxygen
+        uses: mattnotmitt/doxygen-action@1.12.0
+      - name: Upload Artifact
+        uses: actions/upload-pages-artifact@v4.0.0
+        with:
+          path: ./docs/html/
+      - name: Deploy Site
+        uses: actions/deploy-pages@v4.0.5
