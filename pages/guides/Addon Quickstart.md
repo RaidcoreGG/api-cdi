@@ -5,39 +5,44 @@ This is a full guide on how to get started with the AddonHost and implement your
 This guide will be using the C++ programming language. Creation of addons in languages other than C++ are outside the scope of this guide.  
 If you want to program in another language, check out the [community bindings](@ref bindings)
 
-If all you need is an example, see [The Compass Addon](https://github.com/RaidcoreGG/GW2-Compass) (Built with Visual Studio)  
-Alternately, see [NexPad](https://github.com/ChristopherJTrent/NexPad) for a GNU make + GCC example using Msys2  
+If all you need is an example numerous nexus addons are open source, notably:
+1. [The Compass Addon](https://github.com/RaidcoreGG/GW2-Compass) includes Visual Studio project files  
+2. [NexPad](https://github.com/ChristopherJTrent/NexPad) is a GNU make + GCC example using Msys2  
+3. [TrueWorldCompletion](https://github.com/jsantorek/GW2-TrueWorldCompletion) uses cmake and clang (with docker and conan as options)
 
-Each addon loaded by nexus is required to export a function matching the signature `AddonDefinition_t* GetAddonDef()`. See [AddonDefinition_t](@ref AddonDefinition_t) for the full struct definition
+Each addon loaded by nexus is required to export a function matching the signature `AddonDefinition* GetAddonDef()`. See [AddonDefinition_t](@ref AddonDefinition_t) for the full struct definition
 
 Example implementation of GetAddonDef
 ```cpp
-AddonDefinition_t AddonDef{};
+#include <Nexus.h>
 
-void AddonLoad(AddonAPI_t*) {} //add a body as needed.
-void AddonUnload() {} //add a body as needed.
+AddonDefinition AddonDef{};
 
-extern "C" __declspec(dllexport) AddonDefinition_t GetAddonDef()
+void AddonLoad(AddonAPI *) {} // add a body as needed.
+void AddonUnload(){} // add a body as needed.
+
+extern "C" __declspec(dllexport) AddonDefinition* GetAddonDef()
 {
-	AddonDef.Signature = -1; //This must be positive and unused if your addon is available on nexus and negative otherwise.
-	AddonDef.APIVersion = NEXUS_API_VERSION; //this is defined in nexus.h, and contains the current latest version of nexus.
-	AddonDef.Name = "Example Addon";
-	AddonDef.Version.Major = 1; //Treat AddonDef.Version as a SemVer compatible version number.
-	AddonDef.Version.Minor = 0;
-	AddonDef.Version.Build = 0;
-	AddonDef.Version.Revision = 1;
-	AddonDef.Author = "Raidcore";
-	AddonDef.Description = "Example Addon for Documentation";
-	AddonDef.Load = *AddonLoad;
-	AddonDef.Unload = *AddonUnload;
+    AddonDef.Signature = -1; // This must be positive and unused if your addon is available on nexus and negative otherwise.
+    AddonDef.APIVersion = NEXUS_API_VERSION; // this is defined in Nexus.h, and contains the current latest version of nexus.
+    AddonDef.Name = "Example Addon";
+    AddonDef.Version.Major = 1; // Treat AddonDef.Version as a SemVer compatible version number.
+    AddonDef.Version.Minor = 0;
+    AddonDef.Version.Build = 0;
+    AddonDef.Version.Revision = 1;
+    AddonDef.Author = "Raidcore";
+    AddonDef.Description = "Example Addon for Documentation";
+    AddonDef.Load = &AddonLoad;
+    AddonDef.Unload = &AddonUnload;
 
-	//Optional:
-	AddonDef.Provider = EUpdateProvider::UP_None; //See EUpdateProvider in nexus.h
-	AddonDef.UpdateLink = "https://github.com/RaidcoreGG/GW2-Example-Addon" // this link doesn't actually exist.
+    // Optional:
+    AddonDef.Provider = EUpdateProvider::EUpdateProvider_None;               // See EUpdateProvider in Nexus.h
+    AddonDef.UpdateLink = "https://github.com/RaidcoreGG/GW2-Example-Addon"; // this link doesn't actually exist.
+    return &AddonDef;
 }
 ```
 Fields not explicitly marked as optional are required.  
-`Load()` will be called when your addon is loaded, and should initialize anything your addon needs. The `AddonAPI_t*` it receives will contain a version of the nexus API matching the one specified in `AddonDef.APIVersion`. See [AddonAPI_t](@ref AddonAPI_t) for the current version of that API.  
+`Load()` will be called when your addon is loaded, and should initialize anything your addon needs. The `AddonAPI*` it receives will contain a version of the nexus API matching the one specified in `AddonDef.APIVersion`. See [AddonAPI_t](@ref AddonAPI_t) for the current version of that API.  
 `Unload()` will be called when the game shuts down, when your addon is updated, and when it is unloaded. If your addon should not be able to be unloaded at runtime, set `AddonDef.Flags` to `EAddonFlags::DisableHotloading`.
 
 ### Addon Signatures  
@@ -60,22 +65,22 @@ It is recommended to store the reference to the addon API in a shared place, so 
 ### `Shared.h`
 ```cpp
 #pragma once
-#include "nexus.h"
+#include "Nexus.h"
 //#include "imgui.h"
 
-extern AddonAPI_t* Addon_API;
+extern AddonAPI* Addon_API;
 ```
 
 ### `Shared.cpp`
 ```cpp
 #include "Shared.h"
 
-AddonAPI_t Addon_API;
+AddonAPI Addon_API;
 ```
 
 ### `ModuleMain.cpp`
 ```cpp
-void AddonLoad(AddonAPI_t* API) {
+void AddonLoad(AddonAPI* API) {
 	Addon_API = API;
 
 	//Uncomment the next two lines if you are using imgui, and have included it in shared.h
