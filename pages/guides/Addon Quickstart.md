@@ -16,7 +16,7 @@ Each addon loaded by Nexus is required to export a function matching the signatu
 ```cpp
 #include <Nexus.h>
 
-AddonDefinition AddonDef{};
+AddonDefinition_t AddonDef{};
 
 void AddonLoad(AddonAPI*) {}   // Add a body as needed.
 void AddonUnload() {}          // Add a body as needed.
