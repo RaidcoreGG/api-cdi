@@ -93,7 +93,7 @@ void AddonLoad(AddonAPI_t* API) {
 
 void AddonUnload() {}
 
-extern "C" __declspec(dllexport) AddonDefinition* GetAddonDef() {
+extern "C" __declspec(dllexport) AddonDefinition_t* GetAddonDef() {
 	// ... Omitted for brevity, see above for full example.
 }
 ```
