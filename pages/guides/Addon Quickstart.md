@@ -21,7 +21,7 @@ AddonDefinition_t AddonDef{};
 void AddonLoad(AddonAPI_t*) {}   // Add a body as needed.
 void AddonUnload() {}          // Add a body as needed.
 
-extern "C" __declspec(dllexport) AddonDefinition* GetAddonDef()
+extern "C" __declspec(dllexport) AddonDefinition_t* GetAddonDef()
 {
     AddonDef.Signature = -1; // Must be positive and unused if hosted on Nexus; negative otherwise.
     AddonDef.APIVersion = NEXUS_API_VERSION; // Defined in Nexus.h; the latest supported API version.
