@@ -18,7 +18,7 @@ Each addon loaded by Nexus is required to export a function matching the signatu
 
 AddonDefinition_t AddonDef{};
 
-void AddonLoad(AddonAPI*) {}   // Add a body as needed.
+void AddonLoad(AddonAPI_t*) {}   // Add a body as needed.
 void AddonUnload() {}          // Add a body as needed.
 
 extern "C" __declspec(dllexport) AddonDefinition* GetAddonDef()
