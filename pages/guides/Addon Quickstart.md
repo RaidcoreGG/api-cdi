@@ -78,7 +78,7 @@ extern AddonAPI_t* Addon_API;
 ```cpp
 #include "Shared.h"
 
-AddonAPI Addon_API;
+AddonAPI_t Addon_API;
 ```
 
 ### `ModuleMain.cpp`
