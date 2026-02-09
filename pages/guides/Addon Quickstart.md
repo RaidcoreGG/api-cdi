@@ -71,7 +71,7 @@ It is recommended to store the addon API reference in a shared location so it ca
 #include "Nexus.h"
 //#include "imgui.h"
 
-extern AddonAPI* Addon_API;
+extern AddonAPI_t* Addon_API;
 ```
 
 ### `Shared.cpp`
