@@ -83,7 +83,7 @@ AddonAPI_t Addon_API;
 
 ### `ModuleMain.cpp`
 ```cpp
-void AddonLoad(AddonAPI* API) {
+void AddonLoad(AddonAPI_t* API) {
 	Addon_API = API;
 
 	// Uncomment the next two lines if you are using ImGui and have included it in Shared.h
