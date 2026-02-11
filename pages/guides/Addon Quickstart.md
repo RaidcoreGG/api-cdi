@@ -6,7 +6,6 @@ This guide will be using the C++ programming language. Creation of addons in lan
 If you want to program in another language, check out the [community bindings](@ref bindings)
 
 If all you need is an example, see [The Compass Addon](https://github.com/RaidcoreGG/GW2-Compass) (Built with Visual Studio)  
-Alternately, see [NexPad](https://github.com/ChristopherJTrent/NexPad) for a GNU make + GCC example using Msys2  
 
 Each addon loaded by nexus is required to export a function matching the signature `AddonDefinition_t* GetAddonDef()`. See [AddonDefinition_t](@ref AddonDefinition_t) for the full struct definition
 
