@@ -7,7 +7,6 @@ If you want to program in another language, check out the [community bindings](@
 
 If all you need is an example, numerous Nexus addons are open source, notably:
 1. [The Compass Addon](https://github.com/RaidcoreGG/GW2-Compass), which includes Visual Studio project files  
-2. [NexPad](https://github.com/ChristopherJTrent/NexPad), a GNU Make + GCC example using MSYS2  
 3. [TrueWorldCompletion](https://github.com/jsantorek/GW2-TrueWorldCompletion), which uses CMake and Clang (with Docker and Conan as options)
 
 Each addon loaded by Nexus is required to export a function matching the signature `AddonDefinition_t* GetAddonDef()`. See [AddonDefinition_t](@ref AddonDefinition_t) for the full struct definition.
